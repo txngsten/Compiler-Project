@@ -1,6 +1,44 @@
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+char *keywords[] = {"int",   "char", "if", "else",
+                    "while", "for",  "do", "return"};
+int num_keywords = 8;
+
+bool is_keyword(char *lexeme) {
+    for (int i = 0; i < num_keywords; i++) {
+        if (strcmp(keywords[i], lexeme) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool is_delimiter(char c) {
+    switch (c) {
+    case ';':
+        return true;
+    case ',':
+        return true;
+    case '(':
+        return true;
+    case ')':
+        return true;
+    case '{':
+        return true;
+    case '}':
+        return true;
+    case '[':
+        return true;
+    case ']':
+        return true;
+    }
+
+    return false;
+}
 
 bool is_operator(char c) {
     switch (c) {
