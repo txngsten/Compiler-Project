@@ -1,0 +1,10 @@
+build/
+*.o
+*.out
+*.exe
+.git/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
