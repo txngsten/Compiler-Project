@@ -2,4 +2,6 @@ build/
 *.o
 *.out
 *.exe
+lexer
+*.DS_Store
 
