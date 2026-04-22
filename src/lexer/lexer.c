@@ -4,14 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Token {
-    char *lexeme;
-    char *token_type;
-    int row;
-    int col_start;
-    int col_end;
-};
-
 char *keywords[] = {"int",   "char", "if", "else",
                     "while", "for",  "do", "return"};
 int num_keywords = 8;
@@ -61,9 +53,26 @@ bool is_operator(char c) {
     return false;
 }
 
-void tokenisation(char *buffer, size_t buffer_size) {
-    char *start = buffer;
+void parse(char *buffer) {
+    FILE *out = fopen("tokens.txt", "w");
+    if (out == NULL) {
+        fprintf(stderr, "Error: could not open output file\n");
+        return;
+    }
 
+    char *start = buffer;
+    char *token_start = buffer;
+
+    while (*start != '\0') {
+        // Move index forward until non-space character or null-terminator
+        while (*token_start == ' ' && *token_start != '\0') {
+            start++;
+            token_start++;
+        }
+
+    }
+
+    fclose(out);
 }
 
 int main(int argc, char *argv[]) {
