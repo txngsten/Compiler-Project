@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct Token {
+    char *lexeme;
+    char *token_type;
+    int row;
+    int col_start;
+    int col_end;
+};
+
 char *keywords[] = {"int",   "char", "if", "else",
                     "while", "for",  "do", "return"};
 int num_keywords = 8;
@@ -53,6 +61,11 @@ bool is_operator(char c) {
     return false;
 }
 
+void tokenisation(char *buffer, size_t buffer_size) {
+    char *start = buffer;
+
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "No file to parse! Please ensure the relative/absolute "
@@ -78,6 +91,7 @@ int main(int argc, char *argv[]) {
     buffer[bytes_read] = '\0';
 
     fclose(input_file);
+    free(buffer);
 
     return EXIT_SUCCESS;
 }
