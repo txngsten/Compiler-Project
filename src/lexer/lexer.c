@@ -146,7 +146,7 @@ void parse(char *buffer) {
                     tokenise(out, token, row, token_col);
                 }
 
-                fprintf(out, "Lexeme: %c, Token Type: Delimeter, Row Number: %d, Column: %d\n", delim, row, col);
+                fprintf(out, "Lexeme: %c, Token Type: Delimiter, Row Number: %d, Column: %d\n", delim, row, col);
 
                 col++;
                 token_end++;
