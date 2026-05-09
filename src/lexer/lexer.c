@@ -49,6 +49,14 @@ bool is_operator(char c) {
         return true;
     case '=':
         return true;
+    case '<':
+        return true;
+    case '>':
+        return true;
+    case '*':
+        return true;
+    case '/':
+        return true;
     }
 
     return false;
