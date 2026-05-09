@@ -56,17 +56,11 @@ bool is_operator(char c) {
 
 void tokenise(FILE *out, char *token, int row, int col) {
     if (is_keyword(token)) {
-        fprintf(out,
-                "Lexeme: %s, Token Type: Keyword, Row Number: %d, Column: %d\n",
-                token, row, col);
+        fprintf(out, "Lexeme: %s, Token Type: Keyword, Row Number: %d, Column: %d\n", token, row, col);
     } else if (token[0] == '_' || isalpha(token[0])) {
-        fprintf(out,
-                "Lexeme: %s, Token Type: Identifier, Row Number: %d, Column: %d\n",
-                token, row, col);
+        fprintf(out, "Lexeme: %s, Token Type: Identifier, Row Number: %d, Column: %d\n", token, row, col);
     } else {
-        fprintf(out,
-                "Lexeme: %s, Token Type: Numeric Literal, Row Number: %d, Column: %d\n",
-                token, row, col);
+        fprintf(out, "Lexeme: %s, Token Type: Numeric Literal, Row Number: %d, Column: %d\n", token, row, col);
     }
 }
 
@@ -103,10 +97,12 @@ void parse(char *buffer) {
 
         while (*token_end != '\0' && *token_end != ' ' && *token_end != '\n') {
             // Invalid character, current token becomes invalid move onto the next one
-            if (!is_operator(*token_end) && !isalpha(*token_end) && !isdigit(*token_end) && !is_delimiter(*token_end)) {
+            if ((!is_operator(*token_end) && !isalpha(*token_end) && !isdigit(*token_end) &&
+                 !is_delimiter(*token_end)) &&
+                *token_end != '_') {
                 fprintf(out, "Invalid token: %.*s, Located at Row: %d, Column Start: %d\n",
                         (int)(token_end - token_start), token_start, row, token_col);
-                
+
                 col++;
                 token_end++;
                 token_start = token_end;
@@ -128,9 +124,7 @@ void parse(char *buffer) {
                     tokenise(out, token, row, token_col);
                 }
 
-                fprintf(out,
-                        "Lexeme: %c, Token Type: Operator, Row Number: %d, Column: %d\n",
-                        op, row, col);
+                fprintf(out, "Lexeme: %c, Token Type: Operator, Row Number: %d, Column: %d\n", op, row, col);
 
                 col++;
                 token_end++;
@@ -152,9 +146,7 @@ void parse(char *buffer) {
                     tokenise(out, token, row, token_col);
                 }
 
-                fprintf(out,
-                        "Lexeme: %c, Token Type: Delimeter, Row Number: %d, Column: %d\n",
-                        delim, row, col);
+                fprintf(out, "Lexeme: %c, Token Type: Delimeter, Row Number: %d, Column: %d\n", delim, row, col);
 
                 col++;
                 token_end++;
