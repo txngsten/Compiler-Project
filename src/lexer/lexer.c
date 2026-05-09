@@ -53,6 +53,31 @@ bool is_operator(char c) {
     return false;
 }
 
+void tokenise(FILE *out, char *token, int row, int col_start, int col_end) {
+    // Token is a keyword
+    if (is_keyword(token)) {
+        fprintf(out,
+                "Lexeme: %s, Token Type: Keyword, Row Number: %d, Column "
+                "Start: %d, Column End: %d\n",
+                token, row, col_start, col_end);
+    } else if (token[0] == '_' || isalpha(token[0])) {
+        fprintf(out,
+                "Lexeme: %s, Token Type: Identifier, Row Number: %d, Column "
+                "Start: %d, Column End: %d\n",
+                token, row, col_start, col_end);
+    } else if (is_operator(*token)) {
+        fprintf(out,
+                "Lexeme: %s, Token Type: Operator, Row Number: %d, Column "
+                "Start: %d, Column End: %d\n",
+                token, row, col_start, col_end);
+    } else {
+        fprintf(out,
+                "Lexeme: %s, Token Type: Numeric Literal, Row Number: %d, Column "
+                "Start: %d, Column End: %d\n",
+                token, row, col_start, col_end);
+    }
+}
+
 void parse(char *buffer) {
     FILE *out = fopen("tokens.txt", "w");
     if (out == NULL) {
@@ -63,6 +88,8 @@ void parse(char *buffer) {
     char *start = buffer;
     char *token_start = buffer;
 
+    int row = 0, col = 0;
+
     while (*start != '\0') {
         // Move index forward until non-space character or null-terminator
         while (*token_start == ' ' && *token_start != '\0') {
@@ -70,6 +97,23 @@ void parse(char *buffer) {
             token_start++;
         }
 
+        // Start processing token
+        char *token_end = token_start;
+        while (*token_end != '\0' && *token_end != ' ' && *token_end != '\n') {
+            // Invalid character, current token becomes invalid move onto the
+            // next one
+            if (!is_operator(*token_end) && !isalpha(*token_end) &&
+                !isdigit(*token_end)) {
+                fprintf(out, "Invalid token: %.*s\n",
+                        (int)(token_end - token_start), token_start);
+                token_end++;
+                token_start = token_end;
+                break;
+            }
+
+            if (is_operator(*token_end)) {
+            }
+        }
     }
 
     fclose(out);
