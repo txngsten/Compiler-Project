@@ -6,6 +6,24 @@
 
 #define MAX_TOKEN_LEN 512
 
+typedef enum {
+    STATE_START,
+    STATE_NUMERIC,
+    STATE_IDENTIFIER,
+    STATE_ERROR
+} State;
+
+typedef enum {
+    TOKEN_KEYWORD,
+    TOKEN_IDENTIFIER,
+    TOKEN_NUMERIC,
+    TOKEN_OPERATOR,
+    TOKEN_DELIMITER,
+    TOKEN_INVALID
+} TokenType;
+
+char *token_types[] = {"Keyword", "Identifier", "Numeric Literal", "Operator", "Delimiter", "Invalid"};
+
 char *keywords[] = {"int", "char", "if", "else", "while", "for", "do", "return"};
 int num_keywords = 8;
 
@@ -16,6 +34,10 @@ bool is_keyword(char *lexeme) {
         }
     }
     return false;
+}
+
+bool is_whitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 bool is_delimiter(char c) {
@@ -62,126 +84,41 @@ bool is_operator(char c) {
     return false;
 }
 
-void tokenise(FILE *out, char *token, int row, int col) {
-    if (is_keyword(token)) {
-        fprintf(out, "Lexeme: %s, Token Type: Keyword, Row Number: %d, Column: %d\n", token, row, col);
-    } else if (token[0] == '_' || isalpha(token[0])) {
-        fprintf(out, "Lexeme: %s, Token Type: Identifier, Row Number: %d, Column: %d\n", token, row, col);
-    } else {
-        fprintf(out, "Lexeme: %s, Token Type: Numeric Literal, Row Number: %d, Column: %d\n", token, row, col);
-    }
+void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
+    fprintf(out, "Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
+    printf("Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
 }
 
-void parse(char *buffer) {
-    FILE *out = fopen("tokens.txt", "w");
-    if (out == NULL) {
-        fprintf(stderr, "Error: could not open output file\n");
+void flush_token(FILE *out, char *token_start, char *current, int row, int col, State state) {
+    int len = current - token_start;
+    if (len <= 0) {
         return;
     }
 
-    char *start = buffer;
-    char *token_start = buffer;
-
-    int row = 0, col = 0;
-
-    while (*start != '\0') {
-        // Move index forward until non-space character or null-terminator
-        while ((*token_start == ' ' || *token_start == '\n') && *token_start != '\0') {
-            if (*token_start == '\n') {
-                row++;
-                col = 0;
-                start++;
-                token_start++;
-                continue;
-            }
-            start++;
-            token_start++;
-            col++;
-        }
-
-        // Start processing token
-        char *token_end = token_start;
-        int token_col = col;
-
-        while (*token_end != '\0' && *token_end != ' ' && *token_end != '\n') {
-            // Invalid character, current token becomes invalid move onto the next one
-            if ((!is_operator(*token_end) && !isalpha(*token_end) && !isdigit(*token_end) &&
-                 !is_delimiter(*token_end)) &&
-                *token_end != '_') {
-                fprintf(out, "Invalid token: %.*s, Located at Row: %d, Column Start: %d\n",
-                        (int)(token_end - token_start), token_start, row, token_col);
-
-                col++;
-                token_end++;
-                token_start = token_end;
-                break;
-            }
-
-            // Current character is an operator, parse the preceeding string and the operator after
-            if (is_operator(*token_end)) {
-                char op = *token_end;
-
-                int len = token_end - token_start;
-
-                if (len > 0) {
-                    char token[MAX_TOKEN_LEN + 1];
-
-                    memcpy(token, token_start, len);
-                    token[len] = '\0';
-
-                    tokenise(out, token, row, token_col);
-                }
-
-                fprintf(out, "Lexeme: %c, Token Type: Operator, Row Number: %d, Column: %d\n", op, row, col);
-
-                col++;
-                token_end++;
-                token_start = token_end;
-                break;
-            }
-
-            if (is_delimiter(*token_end)) {
-                char delim = *token_end;
-
-                int len = token_end - token_start;
-
-                if (len > 0) {
-                    char token[MAX_TOKEN_LEN + 1];
-
-                    memcpy(token, token_start, len);
-                    token[len] = '\0';
-
-                    tokenise(out, token, row, token_col);
-                }
-
-                fprintf(out, "Lexeme: %c, Token Type: Delimiter, Row Number: %d, Column: %d\n", delim, row, col);
-
-                col++;
-                token_end++;
-                token_start = token_end;
-                break;
-            }
-
-            col++;
-            token_end++;
-        }
-
-        int len = token_end - token_start;
-
-        if (len > 0) {
-            char token[MAX_TOKEN_LEN + 1];
-
-            memcpy(token, token_start, len);
-            token[len] = '\0';
-
-            tokenise(out, token, row, token_col);
-        }
-        start = token_end;
-        token_start = token_end;
+    if (len > MAX_TOKEN_LEN) {
+        len = MAX_TOKEN_LEN;
     }
 
-    fclose(out);
+    char token[MAX_TOKEN_LEN + 1];
+    memcpy(token, token_start, len);
+    token[len] = '\0';
+
+    switch (state) {
+        case STATE_IDENTIFIER:
+            emit_token(out, token, is_keyword(token) ? TOKEN_KEYWORD : TOKEN_IDENTIFIER, row, col);
+            break;
+        case STATE_NUMERIC:
+            emit_token(out, token, TOKEN_NUMERIC, row, col);
+            break;
+        case STATE_ERROR:
+            emit_token(out, token, TOKEN_INVALID, row, col);
+            break;
+        default:
+            break;
+    }
 }
+
+
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -206,8 +143,6 @@ int main(int argc, char *argv[]) {
 
     size_t bytes_read = fread(buffer, 1, file_size, input_file);
     buffer[bytes_read] = '\0';
-
-    parse(buffer);
 
     fclose(input_file);
     free(buffer);
