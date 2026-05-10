@@ -5,7 +5,7 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 
-ColumnLimit: 120
+ColumnLimit: 110
 
 BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: Empty
@@ -27,6 +27,8 @@ IncludeBlocks: Preserve
 SpacesInParentheses: false
 SpaceAfterCStyleCast: false
 SpacesBeforeTrailingComments: 2
+
+AllowShortEnumsOnASingleLine: false
 
 MaxEmptyLinesToKeep: 1
 InsertNewlineAtEOF: true
