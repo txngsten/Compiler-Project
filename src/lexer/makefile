@@ -1,15 +1,13 @@
 CC = clang
 CFLAGS = -Wall -Wextra -std=c11
-
-TARGET = lexer
 SRC = lexer.c
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: lexer
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+lexer: $(SRC)
+	$(CC) $(CFLAGS) -Os -s -flto -o lexer $(SRC)
 
 clean:
-	rm -f $(TARGET)
+	rm -f lexer
