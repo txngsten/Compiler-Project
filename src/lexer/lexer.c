@@ -27,6 +27,10 @@ char *token_types[] = {"Keyword", "Identifier", "Numeric Literal", "Operator", "
 char *keywords[] = {"int", "char", "if", "else", "while", "for", "do", "return"};
 int num_keywords = 8;
 
+int max_token_len_seen = 0;
+int token_type_counts[6] = {0};
+int total_tokens = 0, valid_tokens = 0;
+
 bool is_keyword(char *lexeme) {
     for (int i = 0; i < num_keywords; i++) {
         if (strcmp(keywords[i], lexeme) == 0) {
@@ -84,7 +88,42 @@ bool is_operator(char c) {
     return false;
 }
 
+void print_summary(FILE *out, int line_count, int longest_token) {
+    fprintf(out, "============ Summary Statistics ============");
+    printf("============ Summary Statistics ============");
+
+    fprintf(out, "Total Tokens: %d, Total Valid Tokens: %d, Total Invalid Tokens: %d\n", total_tokens,
+            valid_tokens, token_type_counts[5]);
+    printf("Total Tokens: %d, Total Valid Tokens: %d, Total Invalid Tokens: %d\n", total_tokens, valid_tokens,
+           token_type_counts[5]);
+
+    fprintf(out, "Total Keywords: %d\n", token_type_counts[0]);
+    printf("Total Keywords: %d\n", token_type_counts[0]);
+
+    fprintf(out, "Total Indentifiers: %d\n", token_type_counts[1]);
+    printf("Total Indentifiers: %d\n", token_type_counts[1]);
+
+    fprintf(out, "Total Numeric Literals: %d\n", token_type_counts[2]);
+    printf("Total Numeric Literals: %d\n", token_type_counts[2]);
+
+    fprintf(out, "Total Operators: %d\n", token_type_counts[3]);
+    printf("Total Operators: %d\n", token_type_counts[3]);
+
+    fprintf(out, "Total Delimiters: %d\n", token_type_counts[4]);
+    printf("Total Delimiters: %d\n", token_type_counts[4]);
+
+    fprintf(out, "Total Lines Consumed: %d\n", line_count);
+    printf("Total Lines Consumed: %d\n", line_count);
+
+    fprintf(out, "Longest Token Seen was %d Characters\n", longest_token);
+    printf("Longest Token Seen was %d Characters\n", longest_token);
+}
+
 void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
+    total_tokens++;
+    valid_tokens++;
+    token_type_counts[type]++;
+
     fprintf(out, "Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
     printf("Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
 }
@@ -93,6 +132,10 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
     int len = current - token_start;
     if (len <= 0) {
         return;
+    }
+
+    if (len > max_token_len_seen) {
+        max_token_len_seen = len;
     }
 
     if (len > MAX_TOKEN_LEN) {
@@ -197,6 +240,7 @@ void parse(char *buffer) {
     }
 
     flush_token(out, token_start, current, row, token_col, state);
+    print_summary(out, row, max_token_len_seen);
     
     fclose(out);
 }
