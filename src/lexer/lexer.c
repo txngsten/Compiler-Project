@@ -5,8 +5,10 @@
 #include <string.h>
 #include <time.h>
 
+// Constant for max token length
 #define MAX_TOKEN_LEN 256
 
+// DFA States
 typedef enum {
     STATE_START,
     STATE_NUMERIC,
@@ -14,6 +16,7 @@ typedef enum {
     STATE_ERROR
 } State;
 
+// All Token Types
 typedef enum {
     TOKEN_KEYWORD,
     TOKEN_IDENTIFIER,
@@ -25,13 +28,18 @@ typedef enum {
 
 char *token_types[] = {"Keyword", "Identifier", "Numeric Literal", "Operator", "Delimiter", "Invalid"};
 
+// C Subset Keywords
 char *keywords[] = {"int", "char", "if", "else", "while", "for", "do", "return"};
 int num_keywords = 8;
 
+// Variables used for tracking overall token statistics
 int max_token_len_seen = 0;
 int token_type_counts[6] = {0};
 int total_tokens = 0, valid_tokens = 0;
 
+/*
+ * Takes a string/lexeme and returns true if that lexeme is a keyword and false if not.
+ */
 bool is_keyword(char *lexeme) {
     for (int i = 0; i < num_keywords; i++) {
         if (strcmp(keywords[i], lexeme) == 0) {
@@ -41,10 +49,17 @@ bool is_keyword(char *lexeme) {
     return false;
 }
 
+/*
+ * Takes a character and returns true if it's any form of whitespace and false if not.
+ * Whitespace includes spaces, tabs, newlines, and carriage returns.
+ */
 bool is_whitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
+/*
+ * Takes a character and returns true if it's a delimiter in our C subset and false if not.
+ */
 bool is_delimiter(char c) {
     switch (c) {
     case ';':
@@ -68,6 +83,9 @@ bool is_delimiter(char c) {
     return false;
 }
 
+/*
+ * Takes a character and returns true if it's an operator in our C subset and false if not.
+ */
 bool is_operator(char c) {
     switch (c) {
     case '+':
@@ -89,12 +107,16 @@ bool is_operator(char c) {
     return false;
 }
 
+/*
+ * Takes in a file pointer, count of lines, longest token, and seconds elapsed.
+ * Writes to file and prints to stdout a list of summary statistics about tokens parsed.
+ */
 void print_summary(FILE *out, int line_count, int longest_token, double seconds_elapsed) {
     fprintf(out, "\n");
     printf("\n");
 
-    fprintf(out, "============ Summary Statistics ============\n");
-    printf("============ Summary Statistics ============\n");
+    fprintf(out, "================================ Summary Statistics ================================\n");
+    printf("================================ Summary Statistics ================================\n");
 
     fprintf(out, "Total Tokens: %d, Total Valid Tokens: %d, Total Invalid Tokens: %d\n", total_tokens,
             valid_tokens, token_type_counts[5]);
@@ -126,6 +148,11 @@ void print_summary(FILE *out, int line_count, int longest_token, double seconds_
     printf("Time Elapsed: %.6f seconds\n", seconds_elapsed);
 }
 
+/*
+ * Takes in a file pointer, lexeme/string, token type, row, and column.
+ * Increments token counts for statistical summary.
+ * Writes to file and prints to screen the token information.
+ */
 void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
     total_tokens++;
     valid_tokens++;
@@ -135,26 +162,39 @@ void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
     printf("Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
 }
 
+/*
+ * Takes in a file pointer, character pointer to where the token starts, character pointer to where the token
+ * ends, row number, column number, and current state.
+ * Trims token to MAX_TOKEN_LEN if it exceeds it. Then based on state will call emit_token with the correct
+ * state information.
+ */
 void flush_token(FILE *out, char *token_start, char *current, int row, int col, State state) {
     int len = current - token_start;
+
+    // Invalid length
     if (len <= 0) {
         return;
     }
 
+    // Upadtes max seen token length
     if (len > max_token_len_seen) {
         max_token_len_seen = len;
     }
 
+    // Enforces MAX_TOKEN_LEN
     if (len > MAX_TOKEN_LEN) {
         len = MAX_TOKEN_LEN;
     }
 
+    // Copies token to a seperate character buffer
     char token[MAX_TOKEN_LEN + 1];
     memcpy(token, token_start, len);
     token[len] = '\0';
 
     switch (state) {
     case STATE_IDENTIFIER:
+        // Since both indentifiers and keywords are recognised by the STATE_INDENTIFIER state, we use a
+        // boolean tenary operator to decide which one gets emitted.
         emit_token(out, token, is_keyword(token) ? TOKEN_KEYWORD : TOKEN_IDENTIFIER, row, col);
         break;
     case STATE_NUMERIC:
@@ -168,23 +208,32 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
     }
 }
 
+/*
+ * Takes in a character buffer for the whole input file. Is responsible for parsing the entire input file.
+ * Simulates the DFA process through direct-coded swtich and if-else blocks to perform state transitions.
+*/
 void parse(char *buffer) {
+    // Starts the clock for counting seconds elapsed
     clock_t start = clock();
-
+    
+    // Opens a new file called tokens.txt, checks if succssful, if not returns and prints error
     FILE *out = fopen("tokens.txt", "w");
     if (out == NULL) {
         fprintf(stderr, "Error: failed to open output file\n");
         return;
     }
-
+    
+    // Initialises the buffer, row/col indices, and the start state
     char *current = buffer;
     char *token_start = NULL;
     int row = 0, col = 0, token_col = 0;
     State state = STATE_START;
 
+    // Main loop continues until null-terminator is encountered
     while (*current != '\0') {
         char c = *current;
-
+        
+        // DFA State Transitions
         switch (state) {
         case STATE_START:
             if (isalpha(c) || c == '_') {
@@ -202,6 +251,7 @@ void parse(char *buffer) {
                 char delim[] = {c, '\0'};
                 emit_token(out, delim, TOKEN_DELIMITER, row, col);
             } else if (is_whitespace(c)) {
+                // Ensures row and column information are accuratley handled
                 if (c == '\n') {
                     row++;
                     col = -1;
@@ -247,18 +297,22 @@ void parse(char *buffer) {
         current++;
         col++;
     }
-
+    
+    // Final flush to ensure last token is processed correctly
     flush_token(out, token_start, current, row, token_col, state);
-
+    
+    // End timer and compute seconds elapsed
     clock_t end = clock();
     double seconds_elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-
+    
     print_summary(out, row, max_token_len_seen, seconds_elapsed);
-
+    
+    // RAII: Ensures resource is closed before function exits, file pointer is not leaked
     fclose(out);
 }
 
 int main(int argc, char *argv[]) {
+    // If no file is given as CLI argument, program will return EXIT_FAILURE
     if (argc < 2) {
         fprintf(stderr, "No file to parse! Please ensure the relative/absolute "
                         "file path is a CLI program argument.\n");
@@ -266,29 +320,34 @@ int main(int argc, char *argv[]) {
     }
 
     FILE *input_file = fopen(argv[1], "r");
-
+    
+    // Checks if the file is openable
     if (input_file == NULL) {
         fprintf(stderr, "Error: loading file, ensure file name is correct "
                         "relative/absolute path.\n");
         return EXIT_FAILURE;
     }
-
+    
+    // Gets file size information
     fseek(input_file, 0, SEEK_END);
     long file_size = ftell(input_file);
     rewind(input_file);
-
+    
+    // Allocates a character buffer for the file and checks if the allocation was successful
     char *buffer = malloc(file_size + 1);
     if (buffer == NULL) {
         fprintf(stderr, "Error: Buffer allocation failed\n");
         fclose(input_file);
         return EXIT_FAILURE;
     }
-
+    
+    // Writes the file character by character to the character buffer
     size_t bytes_read = fread(buffer, 1, file_size, input_file);
     buffer[bytes_read] = '\0';
-
+    
     parse(buffer);
-
+    
+    // RAII: Closes the file pointer and frees the heap allocated memory for the buffer
     fclose(input_file);
     free(buffer);
 
