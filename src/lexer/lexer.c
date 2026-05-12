@@ -169,6 +169,11 @@ void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
  * state information.
  */
 void flush_token(FILE *out, char *token_start, char *current, int row, int col, State state) {
+    // No actual token
+    if (token_start == NULL) {
+        return;
+    }
+
     int len = current - token_start;
 
     // Invalid length
@@ -269,6 +274,7 @@ void parse(char *buffer) {
             }
 
             flush_token(out, token_start, current, row, token_col, state);
+            token_start = NULL;
             state = STATE_START;
             continue;
 
@@ -282,12 +288,14 @@ void parse(char *buffer) {
             }
 
             flush_token(out, token_start, current, row, token_col, state);
+            token_start = NULL;
             state = STATE_START;
             continue;
 
         case STATE_ERROR:
             if (is_whitespace(c)) {
                 flush_token(out, token_start, current, row, token_col, state);
+                token_start = NULL;
                 state = STATE_START;
                 continue;
             }
@@ -300,6 +308,7 @@ void parse(char *buffer) {
     
     // Final flush to ensure last token is processed correctly
     flush_token(out, token_start, current, row, token_col, state);
+    token_start = NULL;
     
     // End timer and compute seconds elapsed
     clock_t end = clock();
