@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX_TOKEN_LEN 256
 
@@ -88,7 +89,7 @@ bool is_operator(char c) {
     return false;
 }
 
-void print_summary(FILE *out, int line_count, int longest_token) {
+void print_summary(FILE *out, int line_count, int longest_token, double seconds_elapsed) {
     fprintf(out, "\n");
     printf("\n");
 
@@ -120,6 +121,9 @@ void print_summary(FILE *out, int line_count, int longest_token) {
 
     fprintf(out, "Longest Token Seen was %d Characters\n", longest_token);
     printf("Longest Token Seen was %d Characters\n", longest_token);
+
+    fprintf(out, "Time Elapsed: %.6f seconds\n", seconds_elapsed);
+    printf("Time Elapsed: %.6f seconds\n", seconds_elapsed);
 }
 
 void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
@@ -165,6 +169,8 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
 }
 
 void parse(char *buffer) {
+    clock_t start = clock();
+
     FILE *out = fopen("tokens.txt", "w");
     if (out == NULL) {
         fprintf(stderr, "Error: failed to open output file\n");
@@ -243,8 +249,12 @@ void parse(char *buffer) {
     }
 
     flush_token(out, token_start, current, row, token_col, state);
-    print_summary(out, row, max_token_len_seen);
-    
+
+    clock_t end = clock();
+    double seconds_elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+
+    print_summary(out, row, max_token_len_seen, seconds_elapsed);
+
     fclose(out);
 }
 
