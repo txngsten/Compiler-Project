@@ -89,8 +89,8 @@ bool is_operator(char c) {
 }
 
 void print_summary(FILE *out, int line_count, int longest_token) {
-    fprintf(out, "============ Summary Statistics ============");
-    printf("============ Summary Statistics ============");
+    fprintf(out, "============ Summary Statistics ============\n");
+    printf("============ Summary Statistics ============\n");
 
     fprintf(out, "Total Tokens: %d, Total Valid Tokens: %d, Total Invalid Tokens: %d\n", total_tokens,
             valid_tokens, token_type_counts[5]);
