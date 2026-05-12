@@ -89,6 +89,9 @@ bool is_operator(char c) {
 }
 
 void print_summary(FILE *out, int line_count, int longest_token) {
+    fprintf(out, "\n");
+    printf("\n");
+
     fprintf(out, "============ Summary Statistics ============\n");
     printf("============ Summary Statistics ============\n");
 
