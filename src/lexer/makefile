@@ -7,7 +7,7 @@ SRC = lexer.c
 all: lexer
 
 lexer: $(SRC)
-	$(CC) $(CFLAGS) -Os -flto -o lexer $(SRC)
+	$(CC) $(CFLAGS) -O3 -flto -o lexer $(SRC)
 
 clean:
 	rm -f lexer
