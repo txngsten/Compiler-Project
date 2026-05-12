@@ -3,4 +3,5 @@ build/
 *.out
 *.exe
 *.DS_Store
+tokens.txt
 
