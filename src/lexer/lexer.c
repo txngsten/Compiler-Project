@@ -126,8 +126,8 @@ void print_summary(FILE *out, int line_count, int longest_token, double seconds_
     fprintf(out, "Total Keywords: %d\n", token_type_counts[0]);
     printf("Total Keywords: %d\n", token_type_counts[0]);
 
-    fprintf(out, "Total Indentifiers: %d\n", token_type_counts[1]);
-    printf("Total Indentifiers: %d\n", token_type_counts[1]);
+    fprintf(out, "Total Identifiers: %d\n", token_type_counts[1]);
+    printf("Total Identifiers: %d\n", token_type_counts[1]);
 
     fprintf(out, "Total Numeric Literals: %d\n", token_type_counts[2]);
     printf("Total Numeric Literals: %d\n", token_type_counts[2]);
@@ -155,7 +155,7 @@ void print_summary(FILE *out, int line_count, int longest_token, double seconds_
  */
 void emit_token(FILE *out, char *lexeme, TokenType type, int row, int col) {
     total_tokens++;
-    valid_tokens++;
+    valid_tokens += type == TOKEN_INVALID ? 0 : 1;
     token_type_counts[type]++;
 
     fprintf(out, "Lexeme: %s, Token Type: %s, Row: %d, Column: %d\n", lexeme, token_types[type], row, col);
@@ -176,7 +176,7 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
         return;
     }
 
-    // Upadtes max seen token length
+    // Updates max seen token length
     if (len > max_token_len_seen) {
         max_token_len_seen = len;
     }
@@ -186,15 +186,15 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
         len = MAX_TOKEN_LEN;
     }
 
-    // Copies token to a seperate character buffer
+    // Copies token to a separate character buffer
     char token[MAX_TOKEN_LEN + 1];
     memcpy(token, token_start, len);
     token[len] = '\0';
 
     switch (state) {
     case STATE_IDENTIFIER:
-        // Since both indentifiers and keywords are recognised by the STATE_INDENTIFIER state, we use a
-        // boolean tenary operator to decide which one gets emitted.
+        // Since both identifiers and keywords are recognised by the STATE_IDENTIFIER state, we use a
+        // boolean ternary operator to decide which one gets emitted.
         emit_token(out, token, is_keyword(token) ? TOKEN_KEYWORD : TOKEN_IDENTIFIER, row, col);
         break;
     case STATE_NUMERIC:
@@ -210,13 +210,13 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
 
 /*
  * Takes in a character buffer for the whole input file. Is responsible for parsing the entire input file.
- * Simulates the DFA process through direct-coded swtich and if-else blocks to perform state transitions.
+ * Simulates the DFA process through direct-coded switch and if-else blocks to perform state transitions.
 */
 void parse(char *buffer) {
     // Starts the clock for counting seconds elapsed
     clock_t start = clock();
     
-    // Opens a new file called tokens.txt, checks if succssful, if not returns and prints error
+    // Opens a new file called tokens.txt, checks if successful, if not returns and prints error
     FILE *out = fopen("tokens.txt", "w");
     if (out == NULL) {
         fprintf(stderr, "Error: failed to open output file\n");
@@ -251,7 +251,7 @@ void parse(char *buffer) {
                 char delim[] = {c, '\0'};
                 emit_token(out, delim, TOKEN_DELIMITER, row, col);
             } else if (is_whitespace(c)) {
-                // Ensures row and column information are accuratley handled
+                // Ensures row and column information are accurately handled
                 if (c == '\n') {
                     row++;
                     col = -1;
@@ -305,9 +305,9 @@ void parse(char *buffer) {
     clock_t end = clock();
     double seconds_elapsed = (double)(end - start) / CLOCKS_PER_SEC;
     
-    print_summary(out, row, max_token_len_seen, seconds_elapsed);
+    print_summary(out, row + 1, max_token_len_seen, seconds_elapsed);
     
-    // RAII: Ensures resource is closed before function exits, file pointer is not leaked
+    // Ensures resource is closed before function exits, file pointer is not leaked
     fclose(out);
 }
 
@@ -347,7 +347,7 @@ int main(int argc, char *argv[]) {
     
     parse(buffer);
     
-    // RAII: Closes the file pointer and frees the heap allocated memory for the buffer
+    // Closes the file pointer and frees the heap allocated memory for the buffer
     fclose(input_file);
     free(buffer);
 
