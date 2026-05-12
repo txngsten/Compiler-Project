@@ -188,6 +188,8 @@ void flush_token(FILE *out, char *token_start, char *current, int row, int col, 
 
     // Enforces MAX_TOKEN_LEN
     if (len > MAX_TOKEN_LEN) {
+        fprintf(out, "Token length of %d characters exceeds maximum token length of %d characters - ", len, MAX_TOKEN_LEN);
+        printf("Token length of %d characters exceeds maximum token length of %d characters - ", len, MAX_TOKEN_LEN);
         len = MAX_TOKEN_LEN;
     }
 
