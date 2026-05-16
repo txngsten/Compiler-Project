@@ -5,7 +5,9 @@
  * Rename its main() to avoid conflicting with Unity's test runner main().
  */
 #define main lexer_main
+#define printf(...) (void)0
 #include "../lexer.c"
+#undef printf
 #undef main
 
 // Temp file used by emit_token/flush_token tests
