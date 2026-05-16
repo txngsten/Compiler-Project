@@ -8,14 +8,10 @@
 #include "../lexer.c"
 #undef main
 
-/* Temp file used by emit_token/flush_token tests */
+// Temp file used by emit_token/flush_token tests
 #define TEST_OUTPUT_FILE "test_output.tmp"
 
-/* ========================= Test Helpers ========================= */
-
-/*
- * Resets all global state between tests so each test starts clean.
- */
+// Resets all global state between tests so each test starts clean.
 void reset_globals(void) {
     total_tokens = 0;
     valid_tokens = 0;
@@ -26,7 +22,7 @@ void reset_globals(void) {
 }
 
 /*
- * Reads entire file into a malloc'd string. Caller must free().
+ * Reads entire file into a string.
  * Returns NULL if the file cannot be opened.
  */
 char *read_file_contents(const char *path) {
@@ -51,7 +47,6 @@ char *read_file_contents(const char *path) {
     return buf;
 }
 
-/* ========================= setUp / tearDown ========================= */
 
 void setUp(void) {
     reset_globals();
@@ -62,7 +57,6 @@ void tearDown(void) {
     remove("tokens.txt");
 }
 
-/* ========================= is_keyword Tests ========================= */
 
 void test_is_keyword_all_keywords(void) {
     TEST_ASSERT_TRUE(is_keyword("int"));
@@ -91,8 +85,6 @@ void test_is_keyword_rejects_empty(void) {
     TEST_ASSERT_FALSE(is_keyword(""));
 }
 
-/* ========================= is_whitespace Tests ========================= */
-
 void test_is_whitespace_accepts_all(void) {
     TEST_ASSERT_TRUE(is_whitespace(' '));
     TEST_ASSERT_TRUE(is_whitespace('\t'));
@@ -106,8 +98,6 @@ void test_is_whitespace_rejects_non_whitespace(void) {
     TEST_ASSERT_FALSE(is_whitespace('+'));
     TEST_ASSERT_FALSE(is_whitespace('\0'));
 }
-
-/* ========================= is_delimiter Tests ========================= */
 
 void test_is_delimiter_accepts_all(void) {
     TEST_ASSERT_TRUE(is_delimiter(';'));
@@ -127,8 +117,6 @@ void test_is_delimiter_rejects_non_delimiters(void) {
     TEST_ASSERT_FALSE(is_delimiter('.'));
 }
 
-/* ========================= is_operator Tests ========================= */
-
 void test_is_operator_accepts_all(void) {
     TEST_ASSERT_TRUE(is_operator('+'));
     TEST_ASSERT_TRUE(is_operator('-'));
@@ -145,8 +133,6 @@ void test_is_operator_rejects_non_operators(void) {
     TEST_ASSERT_FALSE(is_operator(' '));
     TEST_ASSERT_FALSE(is_operator('^'));
 }
-
-/* ========================= emit_token Tests ========================= */
 
 void test_emit_token_increments_total(void) {
     FILE *out = fopen(TEST_OUTPUT_FILE, "w");
@@ -208,8 +194,6 @@ void test_emit_token_writes_correct_format(void) {
     TEST_ASSERT_NOT_NULL(strstr(contents, "Column: 7"));
     free(contents);
 }
-
-/* ========================= flush_token Tests ========================= */
 
 void test_flush_token_null_start_does_nothing(void) {
     FILE *out = fopen(TEST_OUTPUT_FILE, "w");
@@ -319,8 +303,6 @@ void test_flush_token_state_start_does_nothing(void) {
     TEST_ASSERT_EQUAL_INT(0, total_tokens);
 }
 
-/* ========================= parse() End-to-End Tests ========================= */
-
 void test_parse_single_keyword(void) {
     char input[] = "int";
     parse(input);
@@ -414,7 +396,6 @@ void test_parse_standalone_invalid_char(void) {
 }
 
 void test_parse_numeric_alpha_error_recovery(void) {
-    /* 123abc should be emitted as a single invalid token */
     char input[] = "123abc ";
     parse(input);
 
@@ -446,7 +427,6 @@ void test_parse_row_tracking_across_newlines(void) {
 
     char *contents = read_file_contents("tokens.txt");
     TEST_ASSERT_NOT_NULL(contents);
-    /* "int" should be on row 0, "x" should be on row 1 */
     TEST_ASSERT_NOT_NULL(strstr(contents, "Lexeme: int, Token Type: Keyword, Row: 0"));
     TEST_ASSERT_NOT_NULL(strstr(contents, "Lexeme: x, Token Type: Identifier, Row: 1"));
     free(contents);
@@ -458,13 +438,11 @@ void test_parse_column_tracking(void) {
 
     char *contents = read_file_contents("tokens.txt");
     TEST_ASSERT_NOT_NULL(contents);
-    /* Two leading spaces means "int" starts at column 2 */
     TEST_ASSERT_NOT_NULL(strstr(contents, "Column: 2"));
     free(contents);
 }
 
 void test_parse_multiple_invalid_chars_grouped(void) {
-    /* "^^" with no whitespace in between should group into one invalid token */
     char input[] = "^^ ";
     parse(input);
 
@@ -477,7 +455,6 @@ void test_parse_multiple_invalid_chars_grouped(void) {
 }
 
 void test_parse_invalid_then_valid_recovery(void) {
-    /* Panic mode: invalid char skipped, then valid token recognised */
     char input[] = "^ int";
     parse(input);
 
@@ -501,7 +478,6 @@ void test_parse_summary_reports_line_count(void) {
 
     char *contents = read_file_contents("tokens.txt");
     TEST_ASSERT_NOT_NULL(contents);
-    /* Three lines: rows 0, 1, 2 → summary should say 3 lines consumed */
     TEST_ASSERT_NOT_NULL(strstr(contents, "Total Lines Consumed: 3"));
     free(contents);
 }
@@ -517,7 +493,6 @@ void test_parse_summary_reports_longest_token(void) {
 }
 
 void test_parse_keyword_not_substring_match(void) {
-    /* "interface" starts with "int" but should be an identifier, not a keyword */
     char input[] = "interface";
     parse(input);
 
@@ -526,7 +501,6 @@ void test_parse_keyword_not_substring_match(void) {
 }
 
 void test_parse_token_at_end_of_input_no_trailing_space(void) {
-    /* Final flush should handle a token right at the null terminator */
     char input[] = "return";
     parse(input);
 
@@ -534,37 +508,29 @@ void test_parse_token_at_end_of_input_no_trailing_space(void) {
     TEST_ASSERT_EQUAL_INT(1, token_type_counts[TOKEN_KEYWORD]);
 }
 
-/* ========================= Test Runner ========================= */
-
 int main(void) {
     UNITY_BEGIN();
 
-    /* is_keyword */
     RUN_TEST(test_is_keyword_all_keywords);
     RUN_TEST(test_is_keyword_rejects_non_keywords);
     RUN_TEST(test_is_keyword_case_sensitive);
     RUN_TEST(test_is_keyword_rejects_empty);
 
-    /* is_whitespace */
     RUN_TEST(test_is_whitespace_accepts_all);
     RUN_TEST(test_is_whitespace_rejects_non_whitespace);
 
-    /* is_delimiter */
     RUN_TEST(test_is_delimiter_accepts_all);
     RUN_TEST(test_is_delimiter_rejects_non_delimiters);
 
-    /* is_operator */
     RUN_TEST(test_is_operator_accepts_all);
     RUN_TEST(test_is_operator_rejects_non_operators);
 
-    /* emit_token */
     RUN_TEST(test_emit_token_increments_total);
     RUN_TEST(test_emit_token_valid_increments_valid_count);
     RUN_TEST(test_emit_token_invalid_does_not_increment_valid);
     RUN_TEST(test_emit_token_increments_correct_type_count);
     RUN_TEST(test_emit_token_writes_correct_format);
 
-    /* flush_token */
     RUN_TEST(test_flush_token_null_start_does_nothing);
     RUN_TEST(test_flush_token_zero_length_does_nothing);
     RUN_TEST(test_flush_token_identifier);
@@ -574,7 +540,6 @@ int main(void) {
     RUN_TEST(test_flush_token_updates_max_len);
     RUN_TEST(test_flush_token_state_start_does_nothing);
 
-    /* parse end-to-end */
     RUN_TEST(test_parse_single_keyword);
     RUN_TEST(test_parse_single_identifier);
     RUN_TEST(test_parse_identifier_with_underscore_prefix);
