@@ -6,8 +6,14 @@ SRC = lexer.c
 
 all: lexer
 
+# For alpine container size optimisation
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+    LDFLAGS = -s -Wl,-z,max-page-size=4096
+endif
+
 lexer: $(SRC)
-	$(CC) $(CFLAGS) -O3 -flto -o lexer $(SRC)
+	$(CC) $(CFLAGS) -Os -flto $(LDFLAGS) -o lexer $(SRC)
 
 clean:
 	rm -f lexer unit_test/tests
