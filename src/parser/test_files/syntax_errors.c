@@ -1,15 +1,22 @@
-int a = 5;
+class Box {
+public:
+    int w = ;
 
-int b = ;
+    int h
+};
 
-int c = 3 + ;
+class Good {
+private:
+    int ok;
+};
 
-int d = (4 + 2;
+int run() {
+    int b = new ;
 
-int good = 7;
+    int c = new Box(1 2);
 
-if (a < b {
-    a = a + 1;
+    delete ;
+
+    int fine = 7;
+    return fine;
 }
-
-return good;

@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    const std::string inPath  = argv[1];
+    const std::string inPath = argv[1];
     const std::string outPath = (argc >= 3) ? argv[2] : "parse_tree.txt";
 
     TokenStream stream;
