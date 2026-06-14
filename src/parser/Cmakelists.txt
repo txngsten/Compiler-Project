@@ -1,37 +1,18 @@
-# ===========================================================================
-# COMP3722 Assessment 2 - LR (SLR) Parser
-#
-# Build:
-#   mkdir build && cd build
-#   cmake ..
-#   cmake --build .
-#
-# Run:
-#   ./parser ../tokens.txt parse_tree.txt
-#   ./parser --grammar-info
-#
-# Toolchain follows the report: LLVM/Clang++ with the C++20 standard. Any
-# C++20-capable compiler (clang++ or g++) will work.
-# ===========================================================================
 cmake_minimum_required(VERSION 3.16)
 
 project(comp3722_parser
         VERSION 1.0
-        DESCRIPTION "SLR(1) parser for the extended C-subset OO language"
+        DESCRIPTION "SLR parser for the extended C-subset OO language"
         LANGUAGES CXX)
 
-# --- C++20, no compiler extensions -----------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Default to a Release build if the user did not specify one.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# Prefer clang++ if available (matches the report's stated toolchain) but do
-# not hard-fail if only g++ is present.
 include(CheckCXXCompilerFlag)
 
 add_executable(parser
@@ -44,7 +25,6 @@ add_executable(parser
 
 target_include_directories(parser PRIVATE ..)
 
-# Warnings on for clang/gcc.
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(parser PRIVATE -Wall -Wextra -Wpedantic)
 endif()
