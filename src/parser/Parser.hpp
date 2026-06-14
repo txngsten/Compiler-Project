@@ -10,35 +10,29 @@
 #include <vector>
 #include <ostream>
 
-// ---------------------------------------------------------------------------
 // Parser.hpp
 //
 // The pushdown automaton. Encapsulates the parser state: a state stack and a
 // parallel symbol/parse-node stack. Driven by the SLR ACTION/GOTO tables, it
 // performs shift / reduce / accept steps and builds the parse tree.
-//
-// Error handling is graceful: on an ACTION error it reports the offending
-// token (lexeme, line, column) and enters panic-mode recovery rather than
-// aborting, so a single syntax error does not lose the rest of the parse.
-// ---------------------------------------------------------------------------
 
 namespace parser {
 
     struct SyntaxError {
         std::string lexeme;
         std::string tokenType;
-        int         row = -1;
-        int         column = -1;
-        int         state = -1;
+        int row = -1;
+        int column = -1;
+        int state = -1;
         std::string message;
     };
 
     struct ParseResult {
-        bool                     accepted = false;
-        ParseNode::Ptr           tree;          // best-effort tree (may be partial)
+        bool accepted = false;
+        ParseNode::Ptr tree;
         std::vector<SyntaxError> errors;
-        int                      tokensConsumed = 0;
-        int                      tokensDiscarded = 0;
+        int tokensConsumed = 0;
+        int tokensDiscarded = 0;
     };
 
     class Parser {

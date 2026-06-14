@@ -29,8 +29,11 @@ typedef enum {
 char *token_types[] = {"Keyword", "Identifier", "Numeric Literal", "Operator", "Delimiter", "Invalid"};
 
 // C Subset Keywords
-char *keywords[] = {"int", "char", "if", "else", "while", "for", "do", "return"};
-int num_keywords = 8;
+char *keywords[] = {
+    "int", "char", "if", "else", "while", "for", "do", "return",
+    "class", "public", "private", "protected", "new", "delete"
+};
+int num_keywords = 14;
 
 // Variables used for tracking overall token statistics
 int max_token_len_seen = 0;
@@ -78,6 +81,8 @@ bool is_delimiter(char c) {
         return true;
     case ']':
         return true;
+        case ':':
+            return true;
     }
 
     return false;

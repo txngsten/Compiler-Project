@@ -4,26 +4,20 @@
 #include <string>
 #include <vector>
 
-// ---------------------------------------------------------------------------
 // Token.hpp
 //
-// Token management: a Token mirrors one line of the lexer's output, and
+// Token mirrors one line of the lexer's output, and
 // TokenStream parses the lexer's text file into a vector of Tokens, appending
 // the synthetic end-marker ($).
-//
-// Expected lexer line format (Assessment 1 output):
-//   Lexeme: <lexeme>, Token Type: <type>, Row: <r>, Column: <c>
-// Everything after a line of "===..." (the summary block) is ignored.
-// ---------------------------------------------------------------------------
 
 namespace parser {
 
     struct Token {
         std::string lexeme;
         std::string type;     // Keyword | Identifier | Numeric Literal | Operator | Delimiter | Invalid
-        int         row = -1;
-        int         column = -1;
-        bool        endMarker = false;
+        int row = -1;
+        int column = -1;
+        bool endMarker = false;
     };
 
     class TokenStream {

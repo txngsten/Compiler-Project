@@ -8,19 +8,13 @@
 #include <sstream>
 #include <string>
 
-// ---------------------------------------------------------------------------
 // main.cpp
 //
 // Driver: build the grammar -> construct the SLR tables -> read the lexer's
 // token file -> run the PDA -> emit the ASCII parse tree + diagnostics to both
 // stdout and an output file.
 //
-// Usage:
-//   parser <tokens-file> [output-file]
-//   parser --grammar-info        (dump the constructed automaton summary)
-//
 // Default output file is "parse_tree.txt".
-// ---------------------------------------------------------------------------
 
 using namespace parser;
 
@@ -87,6 +81,5 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Exit code reflects acceptance (useful for scripted testing).
     return result.accepted ? 0 : 2;
 }
